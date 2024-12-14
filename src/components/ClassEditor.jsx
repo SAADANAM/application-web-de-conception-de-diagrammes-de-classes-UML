@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ClassEditor = ({ classData, onUpdateClass }) => {
+const ClassEditor = ({ classData, onUpdateClass, onDeleteClass }) => {
   const [name, setName] = useState(classData.name);
   const [attributes, setAttributes] = useState(classData.attributes.join(', '));
   const [methods, setMethods] = useState(classData.methods.join(', '));
@@ -19,6 +19,10 @@ const ClassEditor = ({ classData, onUpdateClass }) => {
       methods: methods.split(',').map(method => method.trim()),
     };
     onUpdateClass(updatedClass);
+  };
+
+  const handleDelete = () => {
+    onDeleteClass(classData.id);
   };
 
   return (
@@ -53,6 +57,9 @@ const ClassEditor = ({ classData, onUpdateClass }) => {
       </div>
       <button onClick={handleSave} style={styles.saveButton}>
         Save
+      </button>
+      <button onClick={handleDelete} style={styles.deleteButton}>
+        Delete Class
       </button>
     </div>
   );
@@ -106,6 +113,19 @@ const styles = {
     borderRadius: '10px',
     border: 'none',
     background: 'linear-gradient(135deg, #00d4ff, #0099cc)',
+    color: 'white',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease',
+  },
+  deleteButton: {
+    display: 'block',
+    width: '100%',
+    padding: '12px',
+    fontSize: '1em',
+    borderRadius: '10px',
+    border: 'none',
+    background: 'linear-gradient(135deg, #ff4747, #cc0000)',
     color: 'white',
     cursor: 'pointer',
     fontWeight: 'bold',

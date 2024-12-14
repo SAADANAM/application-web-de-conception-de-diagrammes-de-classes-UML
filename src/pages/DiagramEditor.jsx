@@ -2,71 +2,123 @@ import React, { useState } from 'react';
 import UMLToolbar from '../components/Toolbar';
 import Whiteboard from '../components/Whiteboard';
 import GenerateButton from '../components/GenerateButton';
-import ClassEditor from '../components/ClassEditor'; // Add ClassEditor component
+import ClassEditor from '../components/ClassEditor';
 
 const DiagramEditor = () => {
   const [classes, setClasses] = useState([]);
-  const [editingClass, setEditingClass] = useState(null); // Track the class being edited
-  const [relations, setRelations] = useState([]); 
+  const [relations, setRelations] = useState([]);
+  const [editingClass, setEditingClass] = useState(null);
+  const [relationType, setRelationType] = useState('association'); // Track selected relation type
 
-  // Add Class handler
+  // Function to generate random position within the whiteboard
+  const getRandomPosition = () => {
+    const maxWidth = 800;  // Adjust based on the whiteboard's size
+    const maxHeight = 600; // Adjust based on the whiteboard's size
+    return {
+      x: Math.floor(Math.random() * maxWidth),
+      y: Math.floor(Math.random() * maxHeight),
+    };
+  };
+
+  // Add a new class
   const handleAddClass = () => {
     const newClass = {
       id: classes.length + 1,
       name: `Class ${classes.length + 1}`,
       attributes: ['attribute1', 'attribute2'],
       methods: ['method1()', 'method2()'],
-      position: { x: 100, y: 100 },
+      position: getRandomPosition(), // Set a random position
     };
     setClasses([...classes, newClass]);
   };
 
-  // Handle moving class
+  // Delete a class
+  const handleDeleteClass = (classId) => {
+    setClasses(classes.filter((cls) => cls.id !== classId));
+    setRelations(relations.filter(
+      (relation) => relation.class1Id !== classId && relation.class2Id !== classId
+    ));
+  };
+
+  // Update class position
   const handleMoveClass = (id, newPosition) => {
     setClasses(classes.map(cls =>
       cls.id === id ? { ...cls, position: newPosition } : cls
     ));
   };
 
-  // Handle class edit
+  // Open editor for a specific class
   const handleEditClass = (classId) => {
     const classToEdit = classes.find(cls => cls.id === classId);
     setEditingClass(classToEdit);
   };
 
-  // Handle class updates from the editor
+  // Update class from editor
   const handleUpdateClass = (updatedClass) => {
     setClasses(classes.map(cls =>
       cls.id === updatedClass.id ? updatedClass : cls
     ));
-    setEditingClass(null); // Close the editor after update
+    setEditingClass(null); // Close editor
   };
 
-  // Handle generating code
-  const handleGenerateCode = () => {
-    console.log('Generate Code clicked');
-    // Logic for generating code goes here
-  };
+  // Add a relationship between two classes
   const handleAddRelation = (class1Id, class2Id) => {
-    // Check if both classes exist
     if (class1Id !== class2Id) {
       const newRelation = {
         id: relations.length + 1,
         class1Id,
         class2Id,
-        type: 'association', // You can change the type based on your requirements
+        type: relationType, // Add relation type
       };
       setRelations([...relations, newRelation]);
     } else {
-      console.log('Cannot create a relation with the same class.');
+      alert('Cannot create a relation with the same class.');
     }
   };
 
+  // Generate code (placeholder)
+  const handleGenerateCode = () => {
+    const code = classes.map(cls => {
+      const attributes = cls.attributes.map(attr => `  private ${attr};`).join('\n');
+      const methods = cls.methods.map(method => `  public ${method} {}`).join('\n');
+      return `
+class ${cls.name} {
+${attributes}
+${methods}
+}
+      `;
+    }).join('\n');
+
+    console.log(code); // Display generated code in the console
+  };
+
   return (
-    <div>
-      <UMLToolbar onAddClass={handleAddClass} />
-      <Whiteboard classes={classes} onMoveClass={handleMoveClass} onEditClass={handleEditClass} relations={relations} onAddRelation={handleAddRelation}/>
-      {editingClass && <ClassEditor classData={editingClass} onUpdateClass={handleUpdateClass} />}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Toolbar */}
+      <UMLToolbar
+        onAddClass={handleAddClass}
+        onRelationTypeChange={setRelationType} // Add relation type selector
+      />
+      
+      {/* Whiteboard */}
+      <Whiteboard
+        classes={classes}
+        onMoveClass={handleMoveClass}
+        onEditClass={handleEditClass}
+        relations={relations}
+        onAddRelation={handleAddRelation}
+      />
+
+      {/* Class Editor */}
+      {editingClass && (
+        <ClassEditor
+          classData={editingClass}
+          onUpdateClass={handleUpdateClass}
+          onDeleteClass={handleDeleteClass} // Pass delete handler
+        />
+      )}
+
+      {/* Generate Button */}
       <GenerateButton onGenerateCode={handleGenerateCode} />
     </div>
   );

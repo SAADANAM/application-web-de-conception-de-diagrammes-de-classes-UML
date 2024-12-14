@@ -1,38 +1,29 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
-import {
-  DiagramEngine,
-  DiagramModel,
-  DefaultNodeModel,
-} from '@projectstorm/react-diagrams';
+import { DiagramEngine, DiagramModel } from '@projectstorm/react-diagrams';
+import { DefaultNodeModel } from '@projectstorm/react-diagrams-defaults';
 
 const DiagramComponent = () => {
-  // UseMemo ensures these are initialized once
   const engine = useMemo(() => new DiagramEngine(), []);
   const model = useMemo(() => new DiagramModel(), []);
-
-  // Track the number of classes added
   const [classCount, setClassCount] = useState(0);
 
   useEffect(() => {
-    // Set the model to the engine only once
     engine.setModel(model);
   }, [engine, model]);
 
-  // Function to add a new class without reinitializing the engine or model
   const addClass = () => {
+    const randomColor = `hsl(${Math.random() * 360}, 70%, 70%)`;
+    const randomX = Math.random() * 400;
+    const randomY = Math.random() * 400;
+
     const newNode = new DefaultNodeModel({
       name: `Class ${classCount + 1}`,
-      color: `hsl(${Math.random() * 360}, 70%, 70%)`, // Random color for each class
+      color: randomColor,
     });
-    newNode.setPosition(
-      Math.random() * 400, // Random X position
-      Math.random() * 400 // Random Y position
-    );
-    model.addNode(newNode); // Add node to the existing model
-    setClassCount((prevCount) => prevCount + 1);
-
-    // Repaint the canvas to reflect changes
+    newNode.setPosition(randomX, randomY);
+    model.addNode(newNode);
+    setClassCount(classCount + 1);
     engine.repaintCanvas();
   };
 
